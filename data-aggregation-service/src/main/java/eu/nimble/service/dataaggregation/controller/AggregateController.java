@@ -12,11 +12,14 @@ import io.swagger.annotations.ApiResponses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StopWatch;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+
+import javax.annotation.PostConstruct;
 
 import static eu.nimble.service.dataaggregation.clients.BusinessProcessClient.Role.*;
 import static eu.nimble.service.dataaggregation.clients.BusinessProcessClient.Status.*;
@@ -39,7 +42,15 @@ public class AggregateController {
     private IdentityClient identityClient;
 
     @Autowired
-    BusinessProcessClient businessProcessClient;
+    private BusinessProcessClient businessProcessClient;
+
+    @Autowired
+    private Environment environment;
+
+    @PostConstruct
+    public void init() {
+        logger.info("Using the following URLs: {}, {}", environment.getProperty("nimble.identity.url"), environment.getProperty("nimble.business-process.url"));
+    }
 
     @ApiOperation(value = "Aggregate statistics of companies.", nickname = "getPlatformStats", response = PlatformStats.class)
     @ApiResponses(value = {
