@@ -26,9 +26,9 @@ node('nimble-jenkins-slave') {
             sh 'docker push nimbleplatform/data-aggregation-service:staging'
         }
 
-//        stage('Deploy') {
-//            sh 'ssh staging "cd /srv/nimble-staging/ && ./run-staging.sh restart-single data-aggregation-service"'
-//        }
+        stage('Deploy') {
+            sh 'ssh staging "cd /srv/nimble-staging/ && ./run-staging.sh restart-single data-aggregation-service"'
+        }
     } else {
         stage('Build Docker') {
             sh 'mvn -f data-aggregation-service/pom.xml docker:build'
