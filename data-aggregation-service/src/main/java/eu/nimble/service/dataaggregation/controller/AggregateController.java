@@ -35,7 +35,7 @@ import static eu.nimble.service.dataaggregation.clients.BusinessProcessClient.Ty
 @RequestMapping(path = "/")
 @Api("Data Aggregation API")
 @SuppressWarnings("unused")
-public class AgggregateController {
+public class AggregateController {
 
     private static Logger logger = LoggerFactory.getLogger(AggregateController.class);
 
