@@ -1,0 +1,46 @@
+server:
+  port: ${PORT:9100}
+  tomcat:
+    max-threads: 3
+spring:
+  application:
+    # the name of the application represents the global identifier of this microservice.
+    name: data-aggregations-service
+  cloud:
+    config:
+      uri: ${CONFIG_SERVER_URI:http://localhost:8888}
+      # failFast is disabled per default, so that the service can start standalone without config server.
+      # failFast should be enabled in production environments.
+      # it can be set via an environment variable or the config server
+      failFast: ${CONFIG_SERVER_FAILFAST:false}
+    discovery:
+      # by disabling the service discovery the application/service can be started in "standalone mode".
+      # service discovery is disabled by default and should be enabled (set to true) for the "cloud mode".
+      # it can be set via an environment variable or the config server
+      enabled: ${discovery.enabled:${DISCOVERY_ENABLED:false}}
+logstash:
+  uri: ${LOGSTASH_URI:localhost:5000}
+
+nimble:
+  corsEnabled: false
+  identity:
+    url: ${IDENTITY_SERVICE_URL:http://localhost:9096}
+  business-process:
+    url: ${BUSINESS_PROCESS_SERVICE_URL:http://localhost:8081}
+
+---
+
+spring:
+  profiles: local_dev
+
+logging.level.eu.nimble.service.dataaggregation.clients:
+  IdentityClient: INFO
+  BusinessProcessClient: INFO
+
+nimble:
+  corsEnabled: true
+
+---
+
+spring:
+  profiles: test
