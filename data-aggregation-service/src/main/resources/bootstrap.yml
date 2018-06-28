@@ -34,8 +34,8 @@ spring:
   profiles: local_dev
 
 logging.level.eu.nimble.service.dataaggregation.clients:
-  IdentityClient: INFO
-  BusinessProcessClient: INFO
+  IdentityClient: DEBUG
+  BusinessProcessClient: DEBUG
 
 nimble:
   corsEnabled: true
