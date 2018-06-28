@@ -34,7 +34,8 @@ import static eu.nimble.service.dataaggregation.clients.BusinessProcessClient.Ty
 @Controller
 @RequestMapping(path = "/")
 @Api("Data Aggregation API")
-public class AggregateController {
+@SuppressWarnings("unused")
+public class AgggregateController {
 
     private static Logger logger = LoggerFactory.getLogger(AggregateController.class);
 
@@ -52,9 +53,9 @@ public class AggregateController {
         logger.info("Using the following URLs: {}, {}", environment.getProperty("nimble.identity.url"), environment.getProperty("nimble.business-process.url"));
     }
 
-    @ApiOperation(value = "Aggregate statistics of companies.", nickname = "getPlatformStats", response = PlatformStats.class)
+    @ApiOperation(value = "Aggregate statistics of platform.", nickname = "getPlatformStats", response = PlatformStats.class)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "EPC codes registered"),
+            @ApiResponse(code = 200, message = "Aggregated statistics of platform"),
             @ApiResponse(code = 400, message = "Error while aggregating statistics.")})
     @RequestMapping(value = "/", produces = {"application/json"}, method = RequestMethod.GET)
     public ResponseEntity<?> getPlatformStatistics() {
