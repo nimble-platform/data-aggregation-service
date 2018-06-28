@@ -1,7 +1,7 @@
 node('nimble-jenkins-slave') {
 
     stage('Clone and Update') {
-        git(url: 'https://github.com/nimble-platform/business-process-service.git', branch: env.BRANCH_NAME)
+        git(url: 'https://github.com/nimble-platform/data-aggregation-service', branch: env.BRANCH_NAME)
     }
 
     stage('Build Dependencies') {
@@ -19,38 +19,25 @@ node('nimble-jenkins-slave') {
 
     if (env.BRANCH_NAME == 'staging') {
         stage('Build Docker') {
-            sh '/bin/bash -xe util.sh docker-build-staging'
+            sh 'mvn -f data-aggregation-service/pom.xml docker:build -DdockerImageTag=staging'
         }
 
         stage('Push Docker') {
-            sh 'docker push nimbleplatform/business-process-service:staging'
+            sh 'docker push nimbleplatform/data-aggregation-service:staging'
         }
 
-        stage('Deploy') {
-            sh 'ssh staging "cd /srv/nimble-staging/ && ./run-staging.sh restart-single business-process-service"'
-        }
+//        stage('Deploy') {
+//            sh 'ssh staging "cd /srv/nimble-staging/ && ./run-staging.sh restart-single data-aggregation-service"'
+//        }
     } else {
         stage('Build Docker') {
-            sh '/bin/bash -xe util.sh docker-build'
+            sh 'mvn -f data-aggregation-service/pom.xml docker:build'
         }
     }
 
-    if (env.BRANCH_NAME == 'master') {
-        stage('Deploy') {
-            sh 'ssh nimble "cd /data/deployment_setup/prod/ && sudo ./run-prod.sh restart-single business-process-service"'
-        }
-    }
-
-    // Kubernetes is disabled for now
 //    if (env.BRANCH_NAME == 'master') {
-//        stage('Push Docker') {
-//            withDockerRegistry([credentialsId: 'NimbleDocker']) {
-//                sh '/bin/bash -xe util.sh docker-push'
-//            }
-//        }
-//
-//        stage('Apply to Cluster') {
-//            sh 'kubectl apply -f kubernetes/deploy.yml -n prod --validate=false'
+//        stage('Deploy') {
+//            sh 'ssh nimble "cd /data/deployment_setup/prod/ && sudo ./run-prod.sh restart-single data-aggregation-service"'
 //        }
 //    }
 }
