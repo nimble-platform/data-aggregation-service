@@ -23,4 +23,9 @@ public class BusinessProcessClientFallback implements BusinessProcessClient {
     public Integer getProcessCountByType(Type type) {
         return -1;
     }
+
+    @Override
+    public Double getTradingVolumeByStatus(Status status) {
+        return -1.0;
+    }
 }

@@ -24,6 +24,9 @@ public interface BusinessProcessClient {
     @RequestMapping(method = RequestMethod.GET, value = "/statistics/total-number/business-process")
     Integer getProcessCountByType(@RequestParam(value = "BusinessProcessType") Type type);
 
+    @RequestMapping(method = RequestMethod.GET, value = "/statistics/trading-volume")
+    Double getTradingVolumeByStatus(@RequestParam(value = "status") Status status);
+
     enum Status {
         APPROVED, WAITINGRESPONSE, DENIED
     }
