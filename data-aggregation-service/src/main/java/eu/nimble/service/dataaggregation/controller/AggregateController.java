@@ -5,6 +5,7 @@ import eu.nimble.service.dataaggregation.clients.IdentityClient;
 import eu.nimble.service.dataaggregation.domain.BusinessProcessStatistics;
 import eu.nimble.service.dataaggregation.domain.PlatformStats;
 import eu.nimble.service.dataaggregation.domain.IdentityStatistics;
+import eu.nimble.service.dataaggregation.domain.TradingVolume;
 import io.swagger.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +14,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StopWatch;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -77,19 +77,22 @@ public class AggregateController {
         Integer totalBusinessProcessesInformationRequest = businessProcessClient.getProcessCountByType(ITEM_INFORMATION_REQUEST);
         Integer totalBusinessProcessesNegotiations = businessProcessClient.getProcessCountByType(NEGOTIATION);
         Integer totalBusinessProcessesOrder = businessProcessClient.getProcessCountByType(ORDER);
-        Double volumeWaiting = businessProcessClient.getTradingVolumeByStatus(WAITINGRESPONSE);
-        Double volumeApproved = businessProcessClient.getTradingVolumeByStatus(APPROVED);
-        Double volumeDenied = businessProcessClient.getTradingVolumeByStatus(DENIED);
 
         BusinessProcessStatistics businessProcessStatistics = new BusinessProcessStatistics(totalBusinessProcesses, totalBusinessProcessesWaiting,
                 totalBusinessProcessesApproved, totalBusinessProcessesDenied, totalBusinessProcessesBuyer, totalBusinessProcessesSeller,
-                totalBusinessProcessesInformationRequest, totalBusinessProcessesNegotiations, totalBusinessProcessesOrder,
-                volumeWaiting, volumeApproved, volumeDenied);
+                totalBusinessProcessesInformationRequest, totalBusinessProcessesNegotiations, totalBusinessProcessesOrder);
+
+        // trading volume
+        Double volumeWaiting = businessProcessClient.getTradingVolumeByStatus(WAITINGRESPONSE);
+        Double volumeApproved = businessProcessClient.getTradingVolumeByStatus(APPROVED);
+        Double volumeDenied = businessProcessClient.getTradingVolumeByStatus(DENIED);
+        TradingVolume tradingVolume = new TradingVolume(volumeWaiting, volumeApproved, volumeDenied);
 
         // aggregate statistics
         PlatformStats platformStats = new PlatformStats();
         platformStats.setIdentity(identityStats);
         platformStats.setBusinessProcessCount(businessProcessStatistics);
+        platformStats.setTradingVolume(tradingVolume);
 
         stopWatch.stop();
         logger.info("Finished aggregation of platform statistics in {} ms", stopWatch.getLastTaskTimeMillis());
