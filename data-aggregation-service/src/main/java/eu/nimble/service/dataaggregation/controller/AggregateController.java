@@ -57,7 +57,7 @@ public class AggregateController {
             @ApiResponse(code = 200, message = "Aggregated statistics of platform"),
             @ApiResponse(code = 400, message = "Error while aggregating statistics.")})
     @RequestMapping(value = "/", produces = {"application/json"}, method = RequestMethod.GET)
-    public ResponseEntity<?> getPlatformStatistics(@ApiParam(value = "companyID") @RequestParam(required = false) String companyID) {
+    public ResponseEntity<?> getPlatformStatistics(@ApiParam(value = "companyID (not yet supported") @RequestParam(required = false) String companyID) {
 
         logger.info("Start aggregating platform statistics...");
 
