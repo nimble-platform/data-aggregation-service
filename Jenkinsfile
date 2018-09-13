@@ -35,9 +35,9 @@ node('nimble-jenkins-slave') {
         }
     }
 
-//    if (env.BRANCH_NAME == 'master') {
-//        stage('Deploy') {
-//            sh 'ssh nimble "cd /data/deployment_setup/prod/ && sudo ./run-prod.sh restart-single data-aggregation-service"'
-//        }
-//    }
+    if (env.BRANCH_NAME == 'master') {
+        stage('Deploy') {
+            sh 'ssh nimble "cd /data/deployment_setup/prod/ && sudo ./run-prod.sh restart-single data-aggregation-service"'
+        }
+    }
 }
