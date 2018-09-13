@@ -5,18 +5,20 @@ import eu.nimble.service.dataaggregation.clients.IdentityClient;
 import eu.nimble.service.dataaggregation.domain.BusinessProcessStatistics;
 import eu.nimble.service.dataaggregation.domain.PlatformStats;
 import eu.nimble.service.dataaggregation.domain.IdentityStatistics;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import eu.nimble.service.dataaggregation.domain.TradingVolume;
+import io.swagger.annotations.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StopWatch;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import javax.annotation.PostConstruct;
 
 import static eu.nimble.service.dataaggregation.clients.BusinessProcessClient.Role.*;
 import static eu.nimble.service.dataaggregation.clients.BusinessProcessClient.Status.*;
@@ -31,6 +33,7 @@ import static eu.nimble.service.dataaggregation.clients.BusinessProcessClient.Ty
 @Controller
 @RequestMapping(path = "/")
 @Api("Data Aggregation API")
+@SuppressWarnings("unused")
 public class AggregateController {
 
     private static Logger logger = LoggerFactory.getLogger(AggregateController.class);
@@ -39,14 +42,22 @@ public class AggregateController {
     private IdentityClient identityClient;
 
     @Autowired
-    BusinessProcessClient businessProcessClient;
+    private BusinessProcessClient businessProcessClient;
 
-    @ApiOperation(value = "Aggregate statistics of companies.", nickname = "getPlatformStats", response = PlatformStats.class)
+    @Autowired
+    private Environment environment;
+
+    @PostConstruct
+    public void init() {
+        logger.info("Using the following URLs: {}, {}", environment.getProperty("nimble.identity.url"), environment.getProperty("nimble.business-process.url"));
+    }
+
+    @ApiOperation(value = "Aggregate statistics of platform.", nickname = "getPlatformStats", response = PlatformStats.class)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "EPC codes registered"),
+            @ApiResponse(code = 200, message = "Aggregated statistics of platform"),
             @ApiResponse(code = 400, message = "Error while aggregating statistics.")})
     @RequestMapping(value = "/", produces = {"application/json"}, method = RequestMethod.GET)
-    public ResponseEntity<?> getPlatformStatistics() {
+    public ResponseEntity<?> getPlatformStatistics(@ApiParam(value = "companyID (not yet supported") @RequestParam(required = false) String companyID) {
 
         logger.info("Start aggregating platform statistics...");
 
@@ -66,14 +77,22 @@ public class AggregateController {
         Integer totalBusinessProcessesInformationRequest = businessProcessClient.getProcessCountByType(ITEM_INFORMATION_REQUEST);
         Integer totalBusinessProcessesNegotiations = businessProcessClient.getProcessCountByType(NEGOTIATION);
         Integer totalBusinessProcessesOrder = businessProcessClient.getProcessCountByType(ORDER);
+
         BusinessProcessStatistics businessProcessStatistics = new BusinessProcessStatistics(totalBusinessProcesses, totalBusinessProcessesWaiting,
                 totalBusinessProcessesApproved, totalBusinessProcessesDenied, totalBusinessProcessesBuyer, totalBusinessProcessesSeller,
                 totalBusinessProcessesInformationRequest, totalBusinessProcessesNegotiations, totalBusinessProcessesOrder);
+
+        // trading volume
+        Double volumeWaiting = businessProcessClient.getTradingVolumeByStatus(WAITINGRESPONSE);
+        Double volumeApproved = businessProcessClient.getTradingVolumeByStatus(APPROVED);
+        Double volumeDenied = businessProcessClient.getTradingVolumeByStatus(DENIED);
+        TradingVolume tradingVolume = new TradingVolume(volumeWaiting, volumeApproved, volumeDenied);
 
         // aggregate statistics
         PlatformStats platformStats = new PlatformStats();
         platformStats.setIdentity(identityStats);
         platformStats.setBusinessProcessCount(businessProcessStatistics);
+        platformStats.setTradingVolume(tradingVolume);
 
         stopWatch.stop();
         logger.info("Finished aggregation of platform statistics in {} ms", stopWatch.getLastTaskTimeMillis());

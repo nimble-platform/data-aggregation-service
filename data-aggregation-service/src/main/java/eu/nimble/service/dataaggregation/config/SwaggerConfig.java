@@ -26,7 +26,7 @@ public class SwaggerConfig {
     private ApiInfo metaData() {
         return new ApiInfo(
                 "NIMBLE Data Channel REST API",
-                "REST API for managing data channels on the NIMBLE platform",
+                "REST API for aggregating data on the NIMBLE platform",
                 "0.1",
                 null,
                 new Contact("Johannes Innerbichler", null, "johannes.innerbichler@salzburgresearch.at"),

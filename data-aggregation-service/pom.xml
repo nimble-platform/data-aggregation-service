@@ -35,7 +35,7 @@
 
     <parent>
         <groupId>eu.nimble.services</groupId>
-        <artifactId>data-channel-service-parent</artifactId>
+        <artifactId>data-aggregation-service-parent</artifactId>
         <version>0.0.1</version>
     </parent>
 
@@ -45,16 +45,6 @@
             <name>Johannes Innerbichler</name>
         </developer>
     </developers>
-
-    <repositories>
-        <repository>
-            <id>bintray-fraunhoferiosb-Maven</id>
-            <url>https://dl.bintray.com/fraunhoferiosb/Maven</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-        </repository>
-    </repositories>
 
     <dependencyManagement>
         <dependencies>
@@ -215,12 +205,12 @@
             <artifactId>commons-lang3</artifactId>
             <version>3.7</version>
         </dependency>
-        <dependency>
-            <groupId>eu.nimble.core.common</groupId>
-            <artifactId>statistics-data-model</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
+        <!--<dependency>-->
+            <!--<groupId>eu.nimble.core.common</groupId>-->
+            <!--<artifactId>statistics-data-model</artifactId>-->
+            <!--<version>0.0.1-SNAPSHOT</version>-->
+            <!--<scope>compile</scope>-->
+        <!--</dependency>-->
     </dependencies>
     <build>
         <finalName>app</finalName>

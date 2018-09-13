@@ -5,7 +5,7 @@ server:
 spring:
   application:
     # the name of the application represents the global identifier of this microservice.
-    name: data-aggregations-service
+    name: data-aggregation-service
   cloud:
     config:
       uri: ${CONFIG_SERVER_URI:http://localhost:8888}
@@ -34,8 +34,8 @@ spring:
   profiles: local_dev
 
 logging.level.eu.nimble.service.dataaggregation.clients:
-  IdentityClient: INFO
-  BusinessProcessClient: INFO
+  IdentityClient: DEBUG
+  BusinessProcessClient: DEBUG
 
 nimble:
   corsEnabled: true

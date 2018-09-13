@@ -10,7 +10,8 @@ public class BusinessProcessStatistics {
     private BusinessProcessStatistics() {
     }
 
-    public BusinessProcessStatistics(Integer total, Integer waiting, Integer approved, Integer denied, Integer buyer, Integer seller, Integer informationRequest, Integer negotiations, Integer order) {
+    public BusinessProcessStatistics(Integer total, Integer waiting, Integer approved, Integer denied, Integer buyer,
+                                     Integer seller, Integer informationRequest, Integer negotiations, Integer order) {
         this.total = total;
         this.type = new TypeCount(informationRequest, negotiations, order);
         this.role = new RoleCount(buyer, seller);
@@ -95,6 +96,7 @@ public class BusinessProcessStatistics {
     public Integer getTotal() {
         return total;
     }
+
 
     public TypeCount getType() {
         return type;
