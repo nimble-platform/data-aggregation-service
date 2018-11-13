@@ -36,6 +36,12 @@ node('nimble-jenkins-slave') {
     }
 
     if (env.BRANCH_NAME == 'master') {
+
+        stage('Push Docker') {
+            sh 'mvn -f data-aggregation-service/pom.xml docker:push -DdockerImageTag=latest'
+            sh 'mvn -f data-aggregation-service/pom.xml docker:push'
+        }
+
         stage('Deploy') {
             sh 'ssh nimble "cd /data/deployment_setup/prod/ && sudo ./run-prod.sh restart-single data-aggregation-service"'
         }
