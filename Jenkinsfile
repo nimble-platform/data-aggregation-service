@@ -42,8 +42,12 @@ node('nimble-jenkins-slave') {
             sh 'mvn -f data-aggregation-service/pom.xml docker:push'
         }
 
-        stage('Deploy') {
+        stage('Deploy MVP') {
             sh 'ssh nimble "cd /data/deployment_setup/prod/ && sudo ./run-prod.sh restart-single data-aggregation-service"'
+        }
+
+        stage('Deploy FMP') {
+            sh 'ssh fmp-prod "cd /srv/nimble-fmp/ && ./run-fmp-prod.sh restart-single data-aggregation-service"'
         }
     }
 }
