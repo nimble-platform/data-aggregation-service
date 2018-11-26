@@ -47,4 +47,6 @@
     <logger name="org.springframework.cloud.config.client" level="warn"/>
     <logger name="com.netflix.discovery.shared.resolver.aws" level="warn"/>
     <logger name="com.netflix.discovery.DiscoveryClient" level="warn"/>
+    <logger name="logging.level.eu.nimble.service.dataaggregation.clients.IdentityClient" level="debug"/>
+    <logger name="logging.level.eu.nimble.service.dataaggregation.clients.BusinessProcessClient" level="debug"/>
 </configuration>
