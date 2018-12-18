@@ -1,23 +1,27 @@
 node('nimble-jenkins-slave') {
 
-    stage('Clone and Update') {
-        git(url: 'https://github.com/nimble-platform/data-aggregation-service', branch: env.BRANCH_NAME)
-    }
-
-    stage('Build Dependencies') {
-        sh 'rm -rf common'
-        sh 'git clone https://github.com/nimble-platform/common'
-        dir('common') {
-            sh 'git checkout ' + env.BRANCH_NAME
-            sh 'mvn clean install'
-        }
-    }
-
-    stage('Build Java') {
-        sh 'mvn clean package -DskipTests'
-    }
-
+    // -----------------------------------------------
+    // --------------- Staging Branch ----------------
+    // -----------------------------------------------
     if (env.BRANCH_NAME == 'staging') {
+
+        stage('Clone and Update') {
+            git(url: 'https://github.com/nimble-platform/data-aggregation-service', branch: env.BRANCH_NAME)
+        }
+
+        stage('Build Dependencies') {
+            sh 'rm -rf common'
+            sh 'git clone https://github.com/nimble-platform/common'
+            dir('common') {
+                sh 'git checkout ' + env.BRANCH_NAME
+                sh 'mvn clean install'
+            }
+        }
+
+        stage('Build Java') {
+            sh 'mvn clean package -DskipTests'
+        }
+
         stage('Build Docker') {
             sh 'mvn -f data-aggregation-service/pom.xml docker:build -DdockerImageTag=staging'
         }
@@ -29,13 +33,61 @@ node('nimble-jenkins-slave') {
         stage('Deploy') {
             sh 'ssh staging "cd /srv/nimble-staging/ && ./run-staging.sh restart-single data-aggregation-service"'
         }
-    } else {
-        stage('Build Docker') {
-            sh 'mvn -f data-aggregation-service/pom.xml docker:build'
+    }
+
+    // -----------------------------------------------
+    // ---------------- Master Branch ----------------
+    // -----------------------------------------------
+    if (env.BRANCH_NAME == 'master') {
+
+        stage('Clone and Update') {
+            git(url: 'https://github.com/nimble-platform/data-aggregation-service', branch: env.BRANCH_NAME)
+        }
+
+        stage('Build Dependencies') {
+            sh 'rm -rf common'
+            sh 'git clone https://github.com/nimble-platform/common'
+            dir('common') {
+                sh 'git checkout ' + env.BRANCH_NAME
+                sh 'mvn clean install'
+            }
+        }
+
+        stage('Build Java') {
+            sh 'mvn clean package -DskipTests'
         }
     }
 
-    if (env.BRANCH_NAME == 'master') {
+    // -----------------------------------------------
+    // ---------------- Release Tags -----------------
+    // -----------------------------------------------
+    if( env.TAG_NAME ==~ /^\d+.\d+.\d+$/) {
+
+        stage('Clone and Update') {
+            git(url: 'https://github.com/nimble-platform/data-aggregation-service', branch: 'master')
+        }
+
+        stage('Build Dependencies') {
+            sh 'rm -rf common'
+            sh 'git clone https://github.com/nimble-platform/common'
+            dir('common') {
+                sh 'git checkout master'
+                sh 'mvn clean install'
+            }
+        }
+
+        stage('Set version') {
+            sh 'mvn versions:set -DnewVersion=' + env.TAG_NAME
+            sh 'mvn -f data-aggregation-service/pom.xml versions:set -DnewVersion=' + env.TAG_NAME
+        }
+
+        stage('Build Java') {
+            sh 'mvn clean package -DskipTests'
+        }
+
+        stage('Build Docker') {
+            sh 'mvn -f data-aggregation-service/pom.xml docker:build'
+        }
 
         stage('Push Docker') {
             sh 'mvn -f data-aggregation-service/pom.xml docker:push -DdockerImageTag=latest'
