@@ -1,6 +1,7 @@
 package eu.nimble.service.dataaggregation.clients;
 
 import org.springframework.cloud.netflix.feign.FeignClient;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -11,21 +12,22 @@ import org.springframework.web.bind.annotation.RequestParam;
  * @author Johannes Innerbichler
  */
 @FeignClient(name = "business-process-service", url = "${nimble.business-process.url}", fallback = BusinessProcessClientFallback.class)
+//@FeignClient(name = "business-process-service", url = "${nimble.business-process.url}")
 public interface BusinessProcessClient {
     @RequestMapping(method = RequestMethod.GET, value = "/statistics/total-number/business-process")
-    Integer getTotalCountOfProcesses();
+    Integer getTotalCountOfProcesses(@RequestHeader("Authorization") String bearerToken);
 
     @RequestMapping(method = RequestMethod.GET, value = "/statistics/total-number/business-process")
-    Integer getProcessCountByStatus(@RequestParam(value = "status") Status status);
+    Integer getProcessCountByStatus(@RequestParam(value = "status") Status status, @RequestHeader("Authorization") String bearerToken);
 
     @RequestMapping(method = RequestMethod.GET, value = "/statistics/total-number/business-process")
-    Integer getProcessCountByRole(@RequestParam(value = "role") Role role);
+    Integer getProcessCountByRole(@RequestParam(value = "role") Role role, @RequestHeader("Authorization") String bearerToken);
 
     @RequestMapping(method = RequestMethod.GET, value = "/statistics/total-number/business-process")
-    Integer getProcessCountByType(@RequestParam(value = "BusinessProcessType") Type type);
+    Integer getProcessCountByType(@RequestParam(value = "BusinessProcessType") Type type, @RequestHeader("Authorization") String bearerToken);
 
     @RequestMapping(method = RequestMethod.GET, value = "/statistics/trading-volume")
-    Double getTradingVolumeByStatus(@RequestParam(value = "status") Status status);
+    Double getTradingVolumeByStatus(@RequestParam(value = "status") Status status, @RequestHeader("Authorization") String bearerToken);
 
     enum Status {
         APPROVED, WAITINGRESPONSE, DENIED
