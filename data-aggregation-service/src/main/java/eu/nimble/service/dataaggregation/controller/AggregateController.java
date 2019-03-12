@@ -14,6 +14,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StopWatch;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -57,7 +58,8 @@ public class AggregateController {
             @ApiResponse(code = 200, message = "Aggregated statistics of platform"),
             @ApiResponse(code = 400, message = "Error while aggregating statistics.")})
     @RequestMapping(value = "/", produces = {"application/json"}, method = RequestMethod.GET)
-    public ResponseEntity<?> getPlatformStatistics(@ApiParam(value = "companyID (not yet supported") @RequestParam(required = false) String companyID) {
+    public ResponseEntity<?> getPlatformStatistics(@ApiParam(value = "The Bearer token provided by the identity service") @RequestHeader(value = "Authorization", required = true) String bearerToken,
+                                                   @ApiParam(value = "companyID (not yet supported") @RequestParam(required = false) String companyID) {
 
         logger.info("Start aggregating platform statistics...");
 
@@ -68,24 +70,24 @@ public class AggregateController {
         IdentityStatistics identityStats = identityClient.getIdentityStatistics();
 
         // statistics from Business-Process service
-        Integer totalBusinessProcesses = businessProcessClient.getTotalCountOfProcesses();
-        Integer totalBusinessProcessesWaiting = businessProcessClient.getProcessCountByStatus(WAITINGRESPONSE);
-        Integer totalBusinessProcessesApproved = businessProcessClient.getProcessCountByStatus(APPROVED);
-        Integer totalBusinessProcessesDenied = businessProcessClient.getProcessCountByStatus(DENIED);
-        Integer totalBusinessProcessesBuyer = businessProcessClient.getProcessCountByRole(BUYER);
-        Integer totalBusinessProcessesSeller = businessProcessClient.getProcessCountByRole(SELLER);
-        Integer totalBusinessProcessesInformationRequest = businessProcessClient.getProcessCountByType(ITEM_INFORMATION_REQUEST);
-        Integer totalBusinessProcessesNegotiations = businessProcessClient.getProcessCountByType(NEGOTIATION);
-        Integer totalBusinessProcessesOrder = businessProcessClient.getProcessCountByType(ORDER);
+        Integer totalBusinessProcesses = businessProcessClient.getTotalCountOfProcesses(bearerToken);
+        Integer totalBusinessProcessesWaiting = businessProcessClient.getProcessCountByStatus(WAITINGRESPONSE, bearerToken);
+        Integer totalBusinessProcessesApproved = businessProcessClient.getProcessCountByStatus(APPROVED, bearerToken);
+        Integer totalBusinessProcessesDenied = businessProcessClient.getProcessCountByStatus(DENIED, bearerToken);
+        Integer totalBusinessProcessesBuyer = businessProcessClient.getProcessCountByRole(BUYER, bearerToken);
+        Integer totalBusinessProcessesSeller = businessProcessClient.getProcessCountByRole(SELLER, bearerToken);
+        Integer totalBusinessProcessesInformationRequest = businessProcessClient.getProcessCountByType(ITEM_INFORMATION_REQUEST, bearerToken);
+        Integer totalBusinessProcessesNegotiations = businessProcessClient.getProcessCountByType(NEGOTIATION, bearerToken);
+        Integer totalBusinessProcessesOrder = businessProcessClient.getProcessCountByType(ORDER, bearerToken);
 
         BusinessProcessStatistics businessProcessStatistics = new BusinessProcessStatistics(totalBusinessProcesses, totalBusinessProcessesWaiting,
                 totalBusinessProcessesApproved, totalBusinessProcessesDenied, totalBusinessProcessesBuyer, totalBusinessProcessesSeller,
                 totalBusinessProcessesInformationRequest, totalBusinessProcessesNegotiations, totalBusinessProcessesOrder);
 
         // trading volume
-        Double volumeWaiting = businessProcessClient.getTradingVolumeByStatus(WAITINGRESPONSE);
-        Double volumeApproved = businessProcessClient.getTradingVolumeByStatus(APPROVED);
-        Double volumeDenied = businessProcessClient.getTradingVolumeByStatus(DENIED);
+        Double volumeWaiting = businessProcessClient.getTradingVolumeByStatus(WAITINGRESPONSE, bearerToken);
+        Double volumeApproved = businessProcessClient.getTradingVolumeByStatus(APPROVED, bearerToken);
+        Double volumeDenied = businessProcessClient.getTradingVolumeByStatus(DENIED, bearerToken);
         TradingVolume tradingVolume = new TradingVolume(volumeWaiting, volumeApproved, volumeDenied);
 
         // aggregate statistics
