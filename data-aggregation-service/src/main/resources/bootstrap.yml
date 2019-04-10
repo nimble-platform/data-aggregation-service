@@ -27,6 +27,7 @@ nimble:
     url: ${IDENTITY_SERVICE_URL:http://localhost:9096}
   business-process:
     url: ${BUSINESS_PROCESS_SERVICE_URL:http://localhost:8081}
+  platformHost : ${DATAAGGREGATION_SERVICE_URL:http://localhost:9100}
 
 ---
 
