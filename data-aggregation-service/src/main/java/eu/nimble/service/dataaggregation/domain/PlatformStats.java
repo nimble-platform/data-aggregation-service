@@ -4,6 +4,7 @@ public class PlatformStats {
 
     private IdentityStatistics identity;
     private BusinessProcessStatistics businessProcessCount;
+    private CatalogueStatistics catalogueStatistics;
     private TradingVolume tradingVolume;
 
     public PlatformStats() {
@@ -15,6 +16,12 @@ public class PlatformStats {
 
     public void setIdentity(IdentityStatistics identityStatistics) {
         this.identity = identityStatistics;
+    }
+
+    public CatalogueStatistics getCatalogueStatistics() { return catalogueStatistics; }
+
+    public void setCatalogueStatistics(CatalogueStatistics catalogueStatistics) {
+        this.catalogueStatistics = catalogueStatistics;
     }
 
     public BusinessProcessStatistics getBusinessProcessCount() {
