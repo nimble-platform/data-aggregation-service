@@ -95,14 +95,11 @@ public class AggregateController {
         Double volumeDenied = businessProcessClient.getTradingVolumeByStatus(DENIED, bearerToken);
         TradingVolume tradingVolume = new TradingVolume(volumeWaiting, volumeApproved, volumeDenied);
 
-        CatalogueStatistics catStats = catalogueClient.getTotalProductsAndServices(bearerToken);
-
         // aggregate statistics
         PlatformStats platformStats = new PlatformStats();
         platformStats.setIdentity(identityStats);
         platformStats.setBusinessProcessCount(businessProcessStatistics);
         platformStats.setTradingVolume(tradingVolume);
-        platformStats.setCatalogueStatistics(catStats);
 
         stopWatch.stop();
         logger.info("Finished aggregation of platform statistics in {} ms", stopWatch.getLastTaskTimeMillis());
