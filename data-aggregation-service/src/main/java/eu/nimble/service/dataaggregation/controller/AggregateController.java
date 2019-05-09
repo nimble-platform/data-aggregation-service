@@ -1,8 +1,10 @@
 package eu.nimble.service.dataaggregation.controller;
 
 import eu.nimble.service.dataaggregation.clients.BusinessProcessClient;
+import eu.nimble.service.dataaggregation.clients.CatalogueClient;
 import eu.nimble.service.dataaggregation.clients.IdentityClient;
 import eu.nimble.service.dataaggregation.domain.BusinessProcessStatistics;
+import eu.nimble.service.dataaggregation.domain.CatalogueStatistics;
 import eu.nimble.service.dataaggregation.domain.PlatformStats;
 import eu.nimble.service.dataaggregation.domain.IdentityStatistics;
 import eu.nimble.service.dataaggregation.domain.TradingVolume;
@@ -44,6 +46,9 @@ public class AggregateController {
 
     @Autowired
     private BusinessProcessClient businessProcessClient;
+
+    @Autowired
+    private CatalogueClient catalogueClient;
 
     @Autowired
     private Environment environment;

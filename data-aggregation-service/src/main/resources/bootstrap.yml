@@ -28,6 +28,8 @@ nimble:
   business-process:
     url: ${BUSINESS_PROCESS_SERVICE_URL:http://localhost:8081}
   platformHost : ${DATAAGGREGATION_SERVICE_URL:http://localhost:9100}
+  catalogue:
+    url: ${CATALOGUE_SERVICE_URL:http://localhost:8095}
 
 ---
 
