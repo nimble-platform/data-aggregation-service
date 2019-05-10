@@ -1,8 +1,10 @@
 package eu.nimble.service.dataaggregation.controller;
 
 import eu.nimble.service.dataaggregation.clients.BusinessProcessClient;
+import eu.nimble.service.dataaggregation.clients.CatalogueClient;
 import eu.nimble.service.dataaggregation.clients.IdentityClient;
 import eu.nimble.service.dataaggregation.domain.BusinessProcessStatistics;
+import eu.nimble.service.dataaggregation.domain.CatalogueStatistics;
 import eu.nimble.service.dataaggregation.domain.PlatformStats;
 import eu.nimble.service.dataaggregation.domain.IdentityStatistics;
 import eu.nimble.service.dataaggregation.domain.TradingVolume;
@@ -44,6 +46,9 @@ public class AggregateController {
 
     @Autowired
     private BusinessProcessClient businessProcessClient;
+
+    @Autowired
+    private CatalogueClient catalogueClient;
 
     @Autowired
     private Environment environment;
@@ -88,6 +93,55 @@ public class AggregateController {
         Double volumeWaiting = businessProcessClient.getTradingVolumeByStatus(WAITINGRESPONSE, bearerToken);
         Double volumeApproved = businessProcessClient.getTradingVolumeByStatus(APPROVED, bearerToken);
         Double volumeDenied = businessProcessClient.getTradingVolumeByStatus(DENIED, bearerToken);
+        TradingVolume tradingVolume = new TradingVolume(volumeWaiting, volumeApproved, volumeDenied);
+
+        // aggregate statistics
+        PlatformStats platformStats = new PlatformStats();
+        platformStats.setIdentity(identityStats);
+        platformStats.setBusinessProcessCount(businessProcessStatistics);
+        platformStats.setTradingVolume(tradingVolume);
+
+        stopWatch.stop();
+        logger.info("Finished aggregation of platform statistics in {} ms", stopWatch.getLastTaskTimeMillis());
+
+        return ResponseEntity.ok(platformStats);
+    }
+
+    @ApiOperation(value = "Aggregate statistics of platform.", nickname = "getPlatformStats", response = PlatformStats.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Aggregated statistics of platform"),
+            @ApiResponse(code = 400, message = "Error while aggregating statistics.")})
+    @RequestMapping(value = "/company", produces = {"application/json"}, method = RequestMethod.GET)
+    public ResponseEntity<?> getPlatformStatisticsForComany(@ApiParam(value = "The Bearer token provided by the identity service") @RequestHeader(value = "Authorization", required = true) String bearerToken,
+            @ApiParam(value = "companyID (not yet supported") @RequestParam(required = false) String companyID) {
+
+        logger.info("Start aggregating platform statistics...");
+
+        StopWatch stopWatch = new StopWatch();
+        stopWatch.start();
+
+        // collect statistics from Identity service
+        IdentityStatistics identityStats = identityClient.getIdentityStatistics();
+
+        // statistics from Business-Process service
+        Integer totalBusinessProcesses = businessProcessClient.getTotalCountOfProcessesForCompany(bearerToken,Integer.parseInt(companyID));
+        Integer totalBusinessProcessesWaiting = businessProcessClient.getProcessCountByStatusForCompany(WAITINGRESPONSE,Integer.parseInt(companyID), bearerToken);
+        Integer totalBusinessProcessesApproved = businessProcessClient.getProcessCountByStatusForCompany(APPROVED,Integer.parseInt(companyID), bearerToken);
+        Integer totalBusinessProcessesDenied = businessProcessClient.getProcessCountByStatusForCompany(DENIED,Integer.parseInt(companyID), bearerToken);
+        Integer totalBusinessProcessesBuyer = businessProcessClient.getProcessCountByRoleForCompany(BUYER,Integer.parseInt(companyID), bearerToken);
+        Integer totalBusinessProcessesSeller = businessProcessClient.getProcessCountByRoleForCompany(SELLER,Integer.parseInt(companyID), bearerToken);
+        Integer totalBusinessProcessesInformationRequest = businessProcessClient.getProcessCountByTypeForCompany(ITEM_INFORMATION_REQUEST,Integer.parseInt(companyID), bearerToken);
+        Integer totalBusinessProcessesNegotiations = businessProcessClient.getProcessCountByTypeForCompany(NEGOTIATION,Integer.parseInt(companyID), bearerToken);
+        Integer totalBusinessProcessesOrder = businessProcessClient.getProcessCountByTypeForCompany(ORDER,Integer.parseInt(companyID),bearerToken);
+
+        BusinessProcessStatistics businessProcessStatistics = new BusinessProcessStatistics(totalBusinessProcesses, totalBusinessProcessesWaiting,
+                totalBusinessProcessesApproved, totalBusinessProcessesDenied, totalBusinessProcessesBuyer, totalBusinessProcessesSeller,
+                totalBusinessProcessesInformationRequest, totalBusinessProcessesNegotiations, totalBusinessProcessesOrder);
+
+        // trading volume
+        Double volumeWaiting = businessProcessClient.getTradingVolumeByStatusForCompany(WAITINGRESPONSE,Integer.parseInt(companyID),bearerToken);
+        Double volumeApproved = businessProcessClient.getTradingVolumeByStatusForCompany(APPROVED,Integer.parseInt(companyID),bearerToken);
+        Double volumeDenied = businessProcessClient.getTradingVolumeByStatusForCompany(DENIED,Integer.parseInt(companyID), bearerToken);
         TradingVolume tradingVolume = new TradingVolume(volumeWaiting, volumeApproved, volumeDenied);
 
         // aggregate statistics

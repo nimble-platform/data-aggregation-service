@@ -18,16 +18,38 @@ public interface BusinessProcessClient {
     Integer getTotalCountOfProcesses(@RequestHeader("Authorization") String bearerToken);
 
     @RequestMapping(method = RequestMethod.GET, value = "/statistics/total-number/business-process")
-    Integer getProcessCountByStatus(@RequestParam(value = "status") Status status, @RequestHeader("Authorization") String bearerToken);
+    Integer getTotalCountOfProcessesForCompany(@RequestHeader("Authorization") String bearerToken,
+            @RequestParam(value = "partyId") Integer partyId);
+
+    @RequestMapping(method = RequestMethod.GET, value = "/statistics/total-number/business-process")
+    Integer getProcessCountByStatus(@RequestParam(value = "status") Status status,
+            @RequestHeader("Authorization") String bearerToken);
+
+    @RequestMapping(method = RequestMethod.GET, value = "/statistics/total-number/business-process")
+    Integer getProcessCountByStatusForCompany(@RequestParam(value = "status") Status status,
+            @RequestParam(value = "partyId") Integer partyId,@RequestHeader("Authorization") String bearerToken);
 
     @RequestMapping(method = RequestMethod.GET, value = "/statistics/total-number/business-process")
     Integer getProcessCountByRole(@RequestParam(value = "role") Role role, @RequestHeader("Authorization") String bearerToken);
 
     @RequestMapping(method = RequestMethod.GET, value = "/statistics/total-number/business-process")
+    Integer getProcessCountByRoleForCompany(@RequestParam(value = "role") Role role,
+            @RequestParam(value = "partyId") Integer partyId,@RequestHeader("Authorization") String bearerToken);
+
+    @RequestMapping(method = RequestMethod.GET, value = "/statistics/total-number/business-process")
     Integer getProcessCountByType(@RequestParam(value = "BusinessProcessType") Type type, @RequestHeader("Authorization") String bearerToken);
+
+    @RequestMapping(method = RequestMethod.GET, value = "/statistics/total-number/business-process")
+    Integer getProcessCountByTypeForCompany(@RequestParam(value = "BusinessProcessType") Type type,
+            @RequestParam(value = "partyId") Integer partyId ,@RequestHeader("Authorization") String bearerToken);
 
     @RequestMapping(method = RequestMethod.GET, value = "/statistics/trading-volume")
     Double getTradingVolumeByStatus(@RequestParam(value = "status") Status status, @RequestHeader("Authorization") String bearerToken);
+
+    @RequestMapping(method = RequestMethod.GET, value = "/statistics/trading-volume")
+    Double getTradingVolumeByStatusForCompany(@RequestParam(value = "status") Status status,
+            @RequestParam(value = "partyId") Integer partyId ,@RequestHeader("Authorization") String bearerToken);
+
 
     enum Status {
         APPROVED, WAITINGRESPONSE, DENIED
