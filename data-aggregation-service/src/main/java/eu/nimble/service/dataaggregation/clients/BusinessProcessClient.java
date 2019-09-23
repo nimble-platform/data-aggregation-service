@@ -14,19 +14,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 @FeignClient(name = "business-process-service", url = "${nimble.business-process.url}", fallback = BusinessProcessClientFallback.class)
 //@FeignClient(name = "business-process-service", url = "${nimble.business-process.url}")
 public interface BusinessProcessClient {
-    @RequestMapping(method = RequestMethod.GET, value = "/statistics/total-number/business-process")
-    Integer getTotalCountOfProcesses(@RequestHeader("Authorization") String bearerToken);
 
     @RequestMapping(method = RequestMethod.GET, value = "/statistics/total-number/business-process")
-    Integer getTotalCountOfProcessesForCompany(@RequestHeader("Authorization") String bearerToken,
-            @RequestParam(value = "partyId") Integer partyId);
-
-    @RequestMapping(method = RequestMethod.GET, value = "/statistics/total-number/business-process")
-    Integer getProcessCountByStatus(@RequestParam(value = "status") Status status,
+    Integer getProcessCountByStatusAndRole(@RequestParam(value = "role") Role role,@RequestParam(value = "status") Status status,
             @RequestHeader("Authorization") String bearerToken);
 
     @RequestMapping(method = RequestMethod.GET, value = "/statistics/total-number/business-process")
-    Integer getProcessCountByStatusForCompany(@RequestParam(value = "status") Status status,
+    Integer getProcessCountByStatusRoleForCompany(@RequestParam(value = "role") Role role,@RequestParam(value = "status") Status status,
             @RequestParam(value = "partyId") Integer partyId,@RequestHeader("Authorization") String bearerToken);
 
     @RequestMapping(method = RequestMethod.GET, value = "/statistics/total-number/business-process")

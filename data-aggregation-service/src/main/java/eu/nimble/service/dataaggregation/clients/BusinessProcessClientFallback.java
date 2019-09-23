@@ -1,24 +1,22 @@
 package eu.nimble.service.dataaggregation.clients;
 
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Component
 public class BusinessProcessClientFallback implements BusinessProcessClient {
+
     @Override
-    public Integer getTotalCountOfProcesses(String bearerToken) {
+    public Integer getProcessCountByStatusAndRole(Role role,Status status,
+            String bearerToken) {
         return -1;
     }
 
     @Override
-    public Integer getTotalCountOfProcessesForCompany(String bearerToken, Integer partyId) { return -1; }
+    public Integer getProcessCountByStatusRoleForCompany(Role role,Status status,
+            Integer partyId,String bearerToken) { return -1; }
 
-    @Override
-    public Integer getProcessCountByStatus(Status status, String bearerToken) {
-        return -1;
-    }
-
-    @Override
-    public Integer getProcessCountByStatusForCompany(Status status, Integer partyId, String bearerToken) { return -1; }
 
     @Override
     public Integer getProcessCountByRole(Role role, String bearerToken) {
