@@ -74,19 +74,34 @@ public class AggregateController {
         // collect statistics from Identity service
         IdentityStatistics identityStats = identityClient.getIdentityStatistics();
 
-        // statistics from Business-Process service
-        Integer totalBusinessProcesses = businessProcessClient.getTotalCountOfProcesses(bearerToken);
-        Integer totalBusinessProcessesWaiting = businessProcessClient.getProcessCountByStatus(WAITINGRESPONSE, bearerToken);
-        Integer totalBusinessProcessesApproved = businessProcessClient.getProcessCountByStatus(APPROVED, bearerToken);
-        Integer totalBusinessProcessesDenied = businessProcessClient.getProcessCountByStatus(DENIED, bearerToken);
+        //buyer stats
         Integer totalBusinessProcessesBuyer = businessProcessClient.getProcessCountByRole(BUYER, bearerToken);
+        Integer totalBusinessProcessesWaitingBuyer = businessProcessClient.getProcessCountByStatusAndRole(BUYER,WAITINGRESPONSE, bearerToken);
+        Integer totalBusinessProcessesApprovedBuyer = businessProcessClient.getProcessCountByStatusAndRole(BUYER,APPROVED,bearerToken);
+        Integer totalBusinessProcessesDeniedBuyer = businessProcessClient.getProcessCountByStatusAndRole(BUYER,DENIED,bearerToken);
+
+
+        // seller statistics
         Integer totalBusinessProcessesSeller = businessProcessClient.getProcessCountByRole(SELLER, bearerToken);
+        Integer totalBusinessProcessesWaitingSeller = businessProcessClient.getProcessCountByStatusAndRole(SELLER,WAITINGRESPONSE, bearerToken);
+        Integer totalBusinessProcessesApprovedSeller = businessProcessClient.getProcessCountByStatusAndRole(SELLER,APPROVED, bearerToken);
+        Integer totalBusinessProcessesDeniedSeller = businessProcessClient.getProcessCountByStatusAndRole(SELLER,DENIED, bearerToken);
+
+        // statistics from Business-Process service
+        Integer totalBusinessProcesses = totalBusinessProcessesSeller + totalBusinessProcessesBuyer;
+        Integer totalBusinessProcessesWaiting = totalBusinessProcessesWaitingSeller + totalBusinessProcessesWaitingBuyer;
+        Integer totalBusinessProcessesApproved= totalBusinessProcessesApprovedSeller + totalBusinessProcessesApprovedBuyer;
+        Integer totalBusinessProcessesDenied = totalBusinessProcessesDeniedSeller + totalBusinessProcessesDeniedBuyer;
+
+        // statistics from Business-Process service
         Integer totalBusinessProcessesInformationRequest = businessProcessClient.getProcessCountByType(ITEM_INFORMATION_REQUEST, bearerToken);
         Integer totalBusinessProcessesNegotiations = businessProcessClient.getProcessCountByType(NEGOTIATION, bearerToken);
         Integer totalBusinessProcessesOrder = businessProcessClient.getProcessCountByType(ORDER, bearerToken);
 
         BusinessProcessStatistics businessProcessStatistics = new BusinessProcessStatistics(totalBusinessProcesses, totalBusinessProcessesWaiting,
-                totalBusinessProcessesApproved, totalBusinessProcessesDenied, totalBusinessProcessesBuyer, totalBusinessProcessesSeller,
+                totalBusinessProcessesApproved, totalBusinessProcessesDenied,totalBusinessProcessesSeller,
+                totalBusinessProcessesWaitingSeller,totalBusinessProcessesApprovedSeller,totalBusinessProcessesDeniedSeller,
+                totalBusinessProcessesBuyer,totalBusinessProcessesWaitingBuyer,totalBusinessProcessesApprovedBuyer,totalBusinessProcessesDeniedBuyer,
                 totalBusinessProcessesInformationRequest, totalBusinessProcessesNegotiations, totalBusinessProcessesOrder);
 
         // trading volume
@@ -123,19 +138,32 @@ public class AggregateController {
         // collect statistics from Identity service
         IdentityStatistics identityStats = identityClient.getIdentityStatistics();
 
-        // statistics from Business-Process service
-        Integer totalBusinessProcesses = businessProcessClient.getTotalCountOfProcessesForCompany(bearerToken,Integer.parseInt(companyID));
-        Integer totalBusinessProcessesWaiting = businessProcessClient.getProcessCountByStatusForCompany(WAITINGRESPONSE,Integer.parseInt(companyID), bearerToken);
-        Integer totalBusinessProcessesApproved = businessProcessClient.getProcessCountByStatusForCompany(APPROVED,Integer.parseInt(companyID), bearerToken);
-        Integer totalBusinessProcessesDenied = businessProcessClient.getProcessCountByStatusForCompany(DENIED,Integer.parseInt(companyID), bearerToken);
-        Integer totalBusinessProcessesBuyer = businessProcessClient.getProcessCountByRoleForCompany(BUYER,Integer.parseInt(companyID), bearerToken);
+        // seller statistics
         Integer totalBusinessProcessesSeller = businessProcessClient.getProcessCountByRoleForCompany(SELLER,Integer.parseInt(companyID), bearerToken);
+        Integer totalBusinessProcessesWaitingSeller = businessProcessClient.getProcessCountByStatusRoleForCompany(SELLER,WAITINGRESPONSE,Integer.parseInt(companyID), bearerToken);
+        Integer totalBusinessProcessesApprovedSeller = businessProcessClient.getProcessCountByStatusRoleForCompany(SELLER,APPROVED,Integer.parseInt(companyID), bearerToken);
+        Integer totalBusinessProcessesDeniedSeller = businessProcessClient.getProcessCountByStatusRoleForCompany(SELLER,DENIED,Integer.parseInt(companyID), bearerToken);
+
+        //buyer statistics
+        Integer totalBusinessProcessesBuyer = businessProcessClient.getProcessCountByRoleForCompany(BUYER,Integer.parseInt(companyID), bearerToken);
+        Integer totalBusinessProcessesWaitingBuyer = businessProcessClient.getProcessCountByStatusRoleForCompany(BUYER,WAITINGRESPONSE,Integer.parseInt(companyID), bearerToken);
+        Integer totalBusinessProcessesApprovedBuyer = businessProcessClient.getProcessCountByStatusRoleForCompany(BUYER,APPROVED,Integer.parseInt(companyID), bearerToken);
+        Integer totalBusinessProcessesDeniedBuyer = businessProcessClient.getProcessCountByStatusRoleForCompany(BUYER,DENIED,Integer.parseInt(companyID), bearerToken);
+
+        // statistics from Business-Process service
+        Integer totalBusinessProcesses = totalBusinessProcessesSeller + totalBusinessProcessesBuyer;
+        Integer totalBusinessProcessesWaiting = totalBusinessProcessesWaitingSeller + totalBusinessProcessesWaitingBuyer;
+        Integer totalBusinessProcessesApproved= totalBusinessProcessesApprovedSeller + totalBusinessProcessesApprovedBuyer;
+        Integer totalBusinessProcessesDenied = totalBusinessProcessesDeniedSeller + totalBusinessProcessesDeniedBuyer;
+
         Integer totalBusinessProcessesInformationRequest = businessProcessClient.getProcessCountByTypeForCompany(ITEM_INFORMATION_REQUEST,Integer.parseInt(companyID), bearerToken);
         Integer totalBusinessProcessesNegotiations = businessProcessClient.getProcessCountByTypeForCompany(NEGOTIATION,Integer.parseInt(companyID), bearerToken);
         Integer totalBusinessProcessesOrder = businessProcessClient.getProcessCountByTypeForCompany(ORDER,Integer.parseInt(companyID),bearerToken);
 
-        BusinessProcessStatistics businessProcessStatistics = new BusinessProcessStatistics(totalBusinessProcesses, totalBusinessProcessesWaiting,
-                totalBusinessProcessesApproved, totalBusinessProcessesDenied, totalBusinessProcessesBuyer, totalBusinessProcessesSeller,
+        BusinessProcessStatistics businessProcessStatistics = new BusinessProcessStatistics(totalBusinessProcesses,
+                totalBusinessProcessesWaiting,totalBusinessProcessesApproved,totalBusinessProcessesDenied,
+                totalBusinessProcessesSeller,totalBusinessProcessesWaitingSeller,totalBusinessProcessesApprovedSeller,totalBusinessProcessesDeniedSeller,
+                totalBusinessProcessesBuyer,totalBusinessProcessesWaitingBuyer,totalBusinessProcessesApprovedBuyer,totalBusinessProcessesDeniedBuyer,
                 totalBusinessProcessesInformationRequest, totalBusinessProcessesNegotiations, totalBusinessProcessesOrder);
 
         // trading volume
