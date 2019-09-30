@@ -1,7 +1,12 @@
 package eu.nimble.service.dataaggregation.clients;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Component
@@ -16,7 +21,6 @@ public class BusinessProcessClientFallback implements BusinessProcessClient {
     @Override
     public Integer getProcessCountByStatusRoleForCompany(Role role,Status status,
             Integer partyId,String bearerToken) { return -1; }
-
 
     @Override
     public Integer getProcessCountByRole(Role role, String bearerToken) {
@@ -40,5 +44,17 @@ public class BusinessProcessClientFallback implements BusinessProcessClient {
     }
 
     @Override
-    public Double getTradingVolumeByStatusForCompany(Status status, Integer partyId, String bearerToken) { return -1.0; }
+    public Double getTradingVolumeByStatusForCompany(Role role,Status status, Integer partyId, String bearerToken) { return -1.0; }
+
+    @Override
+    public Double getCollaborationTimeForCompany(Role role, Integer partyId, String bearerToken) { return -1.0; }
+
+    @Override
+    public Double geResponseTimeForCompany(Integer partyId, String bearerToken) { return -1.0; }
+
+    @Override
+    public Map<Integer,Double> geResponseTimeForCompanyForMonths(Integer partyId, String bearerToken) {
+        Map<Integer, Double> map = new HashMap<>();
+        return map;
+    }
 }
