@@ -5,8 +5,11 @@ import eu.nimble.service.dataaggregation.clients.CatalogueClient;
 import eu.nimble.service.dataaggregation.clients.IdentityClient;
 import eu.nimble.service.dataaggregation.domain.BusinessProcessStatistics;
 import eu.nimble.service.dataaggregation.domain.CatalogueStatistics;
+import eu.nimble.service.dataaggregation.domain.CollaborationStats;
+import eu.nimble.service.dataaggregation.domain.CollaborationTime;
 import eu.nimble.service.dataaggregation.domain.PlatformStats;
 import eu.nimble.service.dataaggregation.domain.IdentityStatistics;
+import eu.nimble.service.dataaggregation.domain.ResponseTime;
 import eu.nimble.service.dataaggregation.domain.TradingVolume;
 import io.swagger.annotations.*;
 import org.slf4j.Logger;
@@ -27,6 +30,7 @@ import static eu.nimble.service.dataaggregation.clients.BusinessProcessClient.Ro
 import static eu.nimble.service.dataaggregation.clients.BusinessProcessClient.Status.*;
 import static eu.nimble.service.dataaggregation.clients.BusinessProcessClient.Type.*;
 
+import java.util.Map;
 
 /**
  * REST Controller for managing data channels.
@@ -122,6 +126,7 @@ public class AggregateController {
         return ResponseEntity.ok(platformStats);
     }
 
+
     @ApiOperation(value = "Aggregate statistics of platform.", nickname = "getPlatformStats", response = PlatformStats.class)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Aggregated statistics of platform"),
@@ -166,21 +171,62 @@ public class AggregateController {
                 totalBusinessProcessesBuyer,totalBusinessProcessesWaitingBuyer,totalBusinessProcessesApprovedBuyer,totalBusinessProcessesDeniedBuyer,
                 totalBusinessProcessesInformationRequest, totalBusinessProcessesNegotiations, totalBusinessProcessesOrder);
 
-        // trading volume
-        Double volumeWaiting = businessProcessClient.getTradingVolumeByStatusForCompany(WAITINGRESPONSE,Integer.parseInt(companyID),bearerToken);
-        Double volumeApproved = businessProcessClient.getTradingVolumeByStatusForCompany(APPROVED,Integer.parseInt(companyID),bearerToken);
-        Double volumeDenied = businessProcessClient.getTradingVolumeByStatusForCompany(DENIED,Integer.parseInt(companyID), bearerToken);
-        TradingVolume tradingVolume = new TradingVolume(volumeWaiting, volumeApproved, volumeDenied);
-
         // aggregate statistics
         PlatformStats platformStats = new PlatformStats();
         platformStats.setIdentity(identityStats);
         platformStats.setBusinessProcessCount(businessProcessStatistics);
-        platformStats.setTradingVolume(tradingVolume);
 
         stopWatch.stop();
         logger.info("Finished aggregation of platform statistics in {} ms", stopWatch.getLastTaskTimeMillis());
 
         return ResponseEntity.ok(platformStats);
+    }
+
+    @ApiOperation(value = "Aggregate statistics of company collaboration.", nickname = "getCollabStats", response = CollaborationStats.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Aggregated statistics of company collaboration"),
+            @ApiResponse(code = 400, message = "Error while aggregating statistics.")})
+    @RequestMapping(va  lue = "/company/collabaration", produces = {"application/json"}, method = RequestMethod.GET)
+    public ResponseEntity<?> getCollabarationStatisticsForComany(@ApiParam(value = "The Bearer token provided by the identity service") @RequestHeader(value = "Authorization", required = true) String bearerToken,
+            @ApiParam(value = "companyID (not yet supported") @RequestParam(required = false) String companyID) {
+
+        // trading volume seller
+        Double volumeWaitingSeller = businessProcessClient.getTradingVolumeByStatusForCompany(SELLER,WAITINGRESPONSE,Integer.parseInt(companyID),bearerToken);
+        Double volumeApprovedSeller = businessProcessClient.getTradingVolumeByStatusForCompany(SELLER,APPROVED,Integer.parseInt(companyID),bearerToken);
+        Double volumeDeniedSeller = businessProcessClient.getTradingVolumeByStatusForCompany(SELLER,DENIED,Integer.parseInt(companyID), bearerToken);
+        TradingVolume tradingVolumeSeller = new TradingVolume(volumeWaitingSeller, volumeApprovedSeller, volumeDeniedSeller);
+
+        // trading volume buyer
+        Double volumeWaitingBuyer = businessProcessClient.getTradingVolumeByStatusForCompany(BUYER,WAITINGRESPONSE,Integer.parseInt(companyID),bearerToken);
+        Double volumeApprovedBuyerr = businessProcessClient.getTradingVolumeByStatusForCompany(BUYER,APPROVED,Integer.parseInt(companyID),bearerToken);
+        Double volumeDeniedBuyer = businessProcessClient.getTradingVolumeByStatusForCompany(BUYER,DENIED,Integer.parseInt(companyID), bearerToken);
+        TradingVolume tradingVolumeBuyer = new TradingVolume(volumeWaitingBuyer, volumeApprovedBuyerr, volumeDeniedBuyer);
+
+        Double averageWaitng = (volumeWaitingSeller + volumeWaitingBuyer)/2;
+        Double averageApproved = (volumeApprovedBuyerr + volumeApprovedSeller)/2;
+        Double averageDenied = (volumeDeniedSeller + volumeDeniedBuyer)/2;
+        TradingVolume tradingVolumeAvg = new TradingVolume(averageWaitng, averageApproved, averageDenied);
+
+        //collab time
+        Double averageCollabTimePurchases = businessProcessClient.getCollaborationTimeForCompany(BUYER,Integer.parseInt(companyID),bearerToken);
+        Double averageCollabTimeSales = businessProcessClient.getCollaborationTimeForCompany(SELLER,Integer.parseInt(companyID),bearerToken);
+        Double averageCollabTime = (averageCollabTimePurchases+averageCollabTimeSales)/2;
+        CollaborationTime collaborationTime = new CollaborationTime(averageCollabTime, averageCollabTimePurchases, averageCollabTimeSales);
+
+        //response time
+        Double averageResponseTime = businessProcessClient.geResponseTimeForCompany(Integer.parseInt(companyID),bearerToken);
+        Map<Integer,Double> averagetimeForMonths =
+                businessProcessClient.geResponseTimeForCompanyForMonths(Integer.parseInt(companyID),bearerToken);
+        ResponseTime resTime = new ResponseTime(averageResponseTime,averagetimeForMonths);
+
+        // aggregate statistics
+        CollaborationStats collabStats = new CollaborationStats();
+        collabStats.setTradingVolume(tradingVolumeAvg);
+        collabStats.setTradingVolumesales(tradingVolumeSeller);
+        collabStats.setTradingVolumespurchase(tradingVolumeBuyer);
+        collabStats.setCollaborationTime(collaborationTime);
+        collabStats.setResponseTime(resTime);
+
+        return ResponseEntity.ok(collabStats);
     }
 }
