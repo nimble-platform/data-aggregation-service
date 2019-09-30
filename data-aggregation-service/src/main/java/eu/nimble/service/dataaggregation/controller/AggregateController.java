@@ -186,7 +186,7 @@ public class AggregateController {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Aggregated statistics of company collaboration"),
             @ApiResponse(code = 400, message = "Error while aggregating statistics.")})
-    @RequestMapping(va  lue = "/company/collabaration", produces = {"application/json"}, method = RequestMethod.GET)
+    @RequestMapping(value = "/company/collabaration", produces = {"application/json"}, method = RequestMethod.GET)
     public ResponseEntity<?> getCollabarationStatisticsForComany(@ApiParam(value = "The Bearer token provided by the identity service") @RequestHeader(value = "Authorization", required = true) String bearerToken,
             @ApiParam(value = "companyID (not yet supported") @RequestParam(required = false) String companyID) {
 
