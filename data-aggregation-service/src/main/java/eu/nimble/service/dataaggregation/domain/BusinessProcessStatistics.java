@@ -3,18 +3,21 @@ package eu.nimble.service.dataaggregation.domain;
 public class BusinessProcessStatistics {
 
     private Integer total;
+    private StateCount state;
     private TypeCount type;
     private RoleCount role;
-    private StateCount state;
 
     private BusinessProcessStatistics() {
     }
 
-    public BusinessProcessStatistics(Integer total, Integer waiting, Integer approved, Integer denied, Integer buyer,
-                                     Integer seller, Integer informationRequest, Integer negotiations, Integer order) {
+    public BusinessProcessStatistics(Integer total, Integer waiting, Integer approved, Integer denied,
+                                     Integer sellertotal,Integer sellerwaiting, Integer sellerapproved, Integer sellerdenied,
+                                     Integer buyertotal,Integer buyerwaiting, Integer buyerapproved, Integer buyerdenied,
+                                     Integer informationRequest, Integer negotiations, Integer order) {
         this.total = total;
         this.type = new TypeCount(informationRequest, negotiations, order);
-        this.role = new RoleCount(buyer, seller);
+        this.role = new RoleCount(new RoleType(buyertotal,buyerwaiting,buyerapproved,buyerdenied),
+                new RoleType(sellertotal,sellerwaiting,sellerapproved,sellerdenied));
         this.state = new StateCount(waiting, approved, denied);
     }
 
@@ -46,24 +49,58 @@ public class BusinessProcessStatistics {
     }
 
     static class RoleCount {
-        private Integer buyer;
-        private Integer seller;
+        private RoleType buyer;
+        private RoleType seller;
 
         private RoleCount() {
         }
 
-        private RoleCount(Integer buyer, Integer seller) {
+        private RoleCount(RoleType buyer, RoleType seller) {
             this.buyer = buyer;
             this.seller = seller;
         }
 
-        public Integer getBuyer() {
+        public RoleType getBuyer() {
             return buyer;
         }
 
-        public Integer getSeller() {
+        public RoleType getSeller() {
             return seller;
         }
+    }
+
+    static class RoleType {
+        private Integer tot;
+        private Integer waiting;
+        private Integer approved;
+        private Integer denied;
+
+        private RoleType() {
+        }
+
+        private RoleType(Integer tot,Integer waiting, Integer approved, Integer denied) {
+            this.waiting = waiting;
+            this.approved = approved;
+            this.denied = denied;
+            this.tot = tot;
+        }
+
+        public Integer getTot() {
+            return tot;
+        }
+
+        public Integer getWaiting() {
+            return waiting;
+        }
+
+        public Integer getApproved() {
+            return approved;
+        }
+
+        public Integer getDenied() {
+            return denied;
+        }
+
     }
 
     static class StateCount {
