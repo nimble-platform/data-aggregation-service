@@ -61,7 +61,6 @@ public class AggregateController {
     public void init() {
         logger.info("Using the following URLs: {}, {}", environment.getProperty("nimble.identity.url"), environment.getProperty("nimble.business-process.url"));
     }
-
     @ApiOperation(value = "Aggregate statistics of platform.", nickname = "getPlatformStats", response = PlatformStats.class)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Aggregated statistics of platform"),
@@ -227,6 +226,33 @@ public class AggregateController {
         collabStats.setCollaborationTime(collaborationTime);
         collabStats.setResponseTime(resTime);
 
+        return ResponseEntity.ok(collabStats);
+    }
+
+    @ApiOperation(value = "Aggregate statistics of company collaboration.", nickname = "getCollabStats", response = CollaborationStats.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Aggregated statistics of company collaboration"),
+            @ApiResponse(code = 400, message = "Error while aggregating statistics.")})
+    @RequestMapping(value = "/platform/collabaration", produces = {"application/json"}, method = RequestMethod.GET)
+    public ResponseEntity<?> getCollabarationStatisticsForPlatform(@ApiParam(value = "The Bearer token provided by the identity service") @RequestHeader(value = "Authorization", required = true) String bearerToken) {
+
+
+        //collab time
+        Double averageCollabTimePurchases = businessProcessClient.getCollaborationTimeForPlatform(BUYER,bearerToken);
+        Double averageCollabTimeSales = businessProcessClient.getCollaborationTimeForPlatform(SELLER,bearerToken);
+        Double averageCollabTime = (averageCollabTimePurchases+averageCollabTimeSales)/2;
+        CollaborationTime collaborationTime = new CollaborationTime(averageCollabTime, averageCollabTimePurchases, averageCollabTimeSales);
+
+        //response time
+        Double averageResponseTime = businessProcessClient.geResponseTimeForPlatform(bearerToken);
+        Map<Integer,Double> averagetimeForMonths =
+                businessProcessClient.geResponseTimeForPlatformForMonths(bearerToken);
+        ResponseTime resTime = new ResponseTime(averageResponseTime,averagetimeForMonths);
+
+        // aggregate statistics
+        CollaborationStats collabStats = new CollaborationStats();
+        collabStats.setCollaborationTime(collaborationTime);
+        collabStats.setResponseTime(resTime);
         return ResponseEntity.ok(collabStats);
     }
 }

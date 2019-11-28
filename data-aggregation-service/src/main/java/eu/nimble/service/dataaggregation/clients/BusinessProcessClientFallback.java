@@ -57,4 +57,16 @@ public class BusinessProcessClientFallback implements BusinessProcessClient {
         Map<Integer, Double> map = new HashMap<>();
         return map;
     }
+
+    @Override
+    public Double getCollaborationTimeForPlatform(Role role,String bearerToken){ return -1.0; }
+
+    @Override
+    public Double geResponseTimeForPlatform(String bearerToken){ return -1.0; }
+
+    @Override
+    public Map<Integer,Double> geResponseTimeForPlatformForMonths(String bearerToken){
+        Map<Integer, Double> map = new HashMap<>();
+        return map;
+    }
 }

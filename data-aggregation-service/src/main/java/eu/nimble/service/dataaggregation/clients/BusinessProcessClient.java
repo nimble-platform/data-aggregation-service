@@ -55,13 +55,24 @@ public interface BusinessProcessClient {
     Double getCollaborationTimeForCompany(@RequestParam(value = "role") Role role,
             @RequestParam(value = "partyId") Integer partyId ,@RequestHeader("Authorization") String bearerToken);
 
+    @RequestMapping(method = RequestMethod.GET, value = "/statistics/collaboration-time")
+    Double getCollaborationTimeForPlatform(@RequestParam(value = "role") Role role,
+            @RequestHeader("Authorization") String bearerToken);
+
     @RequestMapping(method = RequestMethod.GET, value = "/statistics/response-time")
     Double geResponseTimeForCompany(@RequestParam(value = "partyId") Integer partyId ,
             @RequestHeader("Authorization") String bearerToken);
 
+    @RequestMapping(method = RequestMethod.GET, value = "/statistics/response-time")
+    Double geResponseTimeForPlatform(@RequestHeader("Authorization") String bearerToken);
+
     @RequestMapping(method = RequestMethod.GET, value = "/statistics/response-time-months")
     Map<Integer,Double> geResponseTimeForCompanyForMonths(@RequestParam(value = "partyId") Integer partyId ,
             @RequestHeader("Authorization") String bearerToken);
+
+    @RequestMapping(method = RequestMethod.GET, value = "/statistics/response-time-months")
+    Map<Integer,Double> geResponseTimeForPlatformForMonths(@RequestHeader("Authorization") String bearerToken);
+
 
     enum Status {
         APPROVED, WAITINGRESPONSE, DENIED
