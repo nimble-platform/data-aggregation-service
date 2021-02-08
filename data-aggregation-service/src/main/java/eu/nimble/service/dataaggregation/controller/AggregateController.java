@@ -30,6 +30,7 @@ import static eu.nimble.service.dataaggregation.clients.BusinessProcessClient.Ro
 import static eu.nimble.service.dataaggregation.clients.BusinessProcessClient.Status.*;
 import static eu.nimble.service.dataaggregation.clients.BusinessProcessClient.Type.*;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -210,7 +211,12 @@ public class AggregateController {
         Double averageCollabTimePurchases = businessProcessClient.getCollaborationTimeForCompany(BUYER,Integer.parseInt(companyID),bearerToken);
         Double averageCollabTimeSales = businessProcessClient.getCollaborationTimeForCompany(SELLER,Integer.parseInt(companyID),bearerToken);
         Double averageCollabTime = (averageCollabTimePurchases+averageCollabTimeSales)/2;
-        CollaborationTime collaborationTime = new CollaborationTime(averageCollabTime, averageCollabTimePurchases, averageCollabTimeSales);
+        Map<Integer,Double> averageCollabTimePurchasesForMonths = businessProcessClient.getCollaborationTimeForCompanyForMonths(BUYER,Integer.parseInt(companyID),bearerToken);
+        Map<Integer,Double> averageCollabTimeSalesForMonths = businessProcessClient.getCollaborationTimeForCompanyForMonths(SELLER,Integer.parseInt(companyID),bearerToken);
+        Map<Integer,Double> averageCollabTimeForMonths = new HashMap<>();
+        averageCollabTimePurchasesForMonths.forEach((month, value) -> averageCollabTimeForMonths.put(month, (averageCollabTimeSalesForMonths.get(month) + value) / 2));
+        CollaborationTime collaborationTime = new CollaborationTime(averageCollabTime, averageCollabTimePurchases, averageCollabTimeSales,averageCollabTimeForMonths,
+                averageCollabTimePurchasesForMonths,averageCollabTimeSalesForMonths);
 
         //response time
         Double averageResponseTime = businessProcessClient.geResponseTimeForCompany(Integer.parseInt(companyID),bearerToken);
@@ -241,7 +247,12 @@ public class AggregateController {
         Double averageCollabTimePurchases = businessProcessClient.getCollaborationTimeForPlatform(BUYER,bearerToken);
         Double averageCollabTimeSales = businessProcessClient.getCollaborationTimeForPlatform(SELLER,bearerToken);
         Double averageCollabTime = (averageCollabTimePurchases+averageCollabTimeSales)/2;
-        CollaborationTime collaborationTime = new CollaborationTime(averageCollabTime, averageCollabTimePurchases, averageCollabTimeSales);
+        Map<Integer,Double> averageCollabTimePurchasesForMonths = businessProcessClient.getCollaborationTimeForPlatformForMonths(BUYER,bearerToken);
+        Map<Integer,Double> averageCollabTimeSalesForMonths = businessProcessClient.getCollaborationTimeForPlatformForMonths(SELLER,bearerToken);
+        Map<Integer,Double> averageCollabTimeForMonths = new HashMap<>();
+        averageCollabTimePurchasesForMonths.forEach((month, value) -> averageCollabTimeForMonths.put(month, (averageCollabTimeSalesForMonths.get(month) + value) / 2));
+        CollaborationTime collaborationTime = new CollaborationTime(averageCollabTime, averageCollabTimePurchases, averageCollabTimeSales,averageCollabTimeForMonths,
+                averageCollabTimePurchasesForMonths,averageCollabTimeSalesForMonths);
 
         //response time
         Double averageResponseTime = businessProcessClient.geResponseTimeForPlatform(bearerToken);

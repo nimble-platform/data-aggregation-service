@@ -59,6 +59,15 @@ public interface BusinessProcessClient {
     Double getCollaborationTimeForPlatform(@RequestParam(value = "role") Role role,
             @RequestHeader("Authorization") String bearerToken);
 
+
+    @RequestMapping(method = RequestMethod.GET, value = "/statistics/collaboration-time-months")
+    Map<Integer,Double> getCollaborationTimeForCompanyForMonths(@RequestParam(value = "role") Role role,
+                                                                @RequestParam(value = "partyId") Integer partyId ,
+                                                          @RequestHeader("Authorization") String bearerToken);
+
+    @RequestMapping(method = RequestMethod.GET, value = "/statistics/collaboration-time-months")
+    Map<Integer,Double> getCollaborationTimeForPlatformForMonths(@RequestParam(value = "role") Role role,@RequestHeader("Authorization") String bearerToken);
+
     @RequestMapping(method = RequestMethod.GET, value = "/statistics/response-time")
     Double geResponseTimeForCompany(@RequestParam(value = "partyId") Integer partyId ,
             @RequestHeader("Authorization") String bearerToken);
