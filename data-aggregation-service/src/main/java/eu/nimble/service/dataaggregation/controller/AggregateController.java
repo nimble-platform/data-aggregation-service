@@ -92,10 +92,10 @@ public class AggregateController {
         Integer totalBusinessProcessesDeniedSeller = businessProcessClient.getProcessCountByStatusAndRole(SELLER,DENIED, bearerToken);
 
         // statistics from Business-Process service
-        Integer totalBusinessProcesses = totalBusinessProcessesSeller + totalBusinessProcessesBuyer;
-        Integer totalBusinessProcessesWaiting = totalBusinessProcessesWaitingSeller + totalBusinessProcessesWaitingBuyer;
-        Integer totalBusinessProcessesApproved= totalBusinessProcessesApprovedSeller + totalBusinessProcessesApprovedBuyer;
-        Integer totalBusinessProcessesDenied = totalBusinessProcessesDeniedSeller + totalBusinessProcessesDeniedBuyer;
+        Integer totalBusinessProcesses = (totalBusinessProcessesSeller + totalBusinessProcessesBuyer)/2;
+        Integer totalBusinessProcessesWaiting = (totalBusinessProcessesWaitingSeller + totalBusinessProcessesWaitingBuyer)/2;
+        Integer totalBusinessProcessesApproved= (totalBusinessProcessesApprovedSeller + totalBusinessProcessesApprovedBuyer)/2;
+        Integer totalBusinessProcessesDenied = (totalBusinessProcessesDeniedSeller + totalBusinessProcessesDeniedBuyer)/2;
 
         // statistics from Business-Process service
         Integer totalBusinessProcessesInformationRequest = businessProcessClient.getProcessCountByType(ITEM_INFORMATION_REQUEST, bearerToken);
