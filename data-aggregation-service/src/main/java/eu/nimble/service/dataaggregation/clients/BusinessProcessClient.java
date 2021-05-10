@@ -36,7 +36,7 @@ public interface BusinessProcessClient {
             @RequestParam(value = "partyId") Integer partyId,@RequestHeader("Authorization") String bearerToken);
 
     @RequestMapping(method = RequestMethod.GET, value = "/statistics/total-number/business-process")
-    Integer getProcessCountByType(@RequestParam(value = "BusinessProcessType") Type type,
+    Integer getProcessCountByType(@RequestParam(value = "businessProcessType") Type type,
             @RequestHeader("Authorization") String bearerToken);
 
     @RequestMapping(method = RequestMethod.GET, value = "/statistics/total-number/business-process")
