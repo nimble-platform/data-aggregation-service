@@ -1,1 +1,5 @@
 data-aggregation-service/target
+
+#idea
+.idea/
+*.iml
