@@ -32,6 +32,10 @@ import static eu.nimble.service.dataaggregation.clients.BusinessProcessClient.Ty
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * REST Controller for managing data channels.
@@ -240,30 +244,47 @@ public class AggregateController {
             @ApiResponse(code = 200, message = "Aggregated statistics of company collaboration"),
             @ApiResponse(code = 400, message = "Error while aggregating statistics.")})
     @RequestMapping(value = "/platform/collabaration", produces = {"application/json"}, method = RequestMethod.GET)
-    public ResponseEntity<?> getCollabarationStatisticsForPlatform(@ApiParam(value = "The Bearer token provided by the identity service") @RequestHeader(value = "Authorization", required = true) String bearerToken) {
+    public ResponseEntity<?> getCollabarationStatisticsForPlatform(@ApiParam(value = "The Bearer token provided by the identity service") @RequestHeader(value = "Authorization", required = true) String bearerToken) throws ExecutionException, InterruptedException {
+        ExecutorService executorService = null;
+        try{
+            // create a thread pool to run business process service calls asynchronous
+            executorService = Executors.newCachedThreadPool();
+            //collab time
+            Future<Double> averageCollabTimePurchasesFuture = executorService.submit(() -> businessProcessClient.getCollaborationTimeForPlatform(BUYER,bearerToken));
+            Future<Double> averageCollabTimeSalesFuture = executorService.submit(() -> businessProcessClient.getCollaborationTimeForPlatform(SELLER,bearerToken));
+            // collaboration times monthly
+            Future<Map<Integer,Double>> averageCollabTimePurchasesForMonthsFuture = executorService.submit(() -> businessProcessClient.getCollaborationTimeForPlatformForMonths(BUYER,bearerToken));
+            Future<Map<Integer,Double>> averageCollabTimeSalesForMonthsFuture = executorService.submit(() -> businessProcessClient.getCollaborationTimeForPlatformForMonths(SELLER,bearerToken));
+            // response time
+            Future<Double> averageResponseTimeFuture = executorService.submit(() -> businessProcessClient.geResponseTimeForPlatform(bearerToken));
+            Future<Map<Integer,Double>> averagetimeForMonthsFuture = executorService.submit(() -> businessProcessClient.geResponseTimeForPlatformForMonths(bearerToken));
 
+            // get the response of each asynchronous call
+            Double averageCollabTimePurchases = averageCollabTimePurchasesFuture.get();
+            Double averageCollabTimeSales = averageCollabTimeSalesFuture.get();
+            Map<Integer,Double> averageCollabTimePurchasesForMonths = averageCollabTimePurchasesForMonthsFuture.get();
+            Map<Integer,Double> averageCollabTimeSalesForMonths = averageCollabTimeSalesForMonthsFuture.get();
+            Double averageResponseTime = averageResponseTimeFuture.get();
+            Map<Integer,Double> averagetimeForMonths = averagetimeForMonthsFuture.get();
 
-        //collab time
-        Double averageCollabTimePurchases = businessProcessClient.getCollaborationTimeForPlatform(BUYER,bearerToken);
-        Double averageCollabTimeSales = businessProcessClient.getCollaborationTimeForPlatform(SELLER,bearerToken);
-        Double averageCollabTime = (averageCollabTimePurchases+averageCollabTimeSales)/2;
-        Map<Integer,Double> averageCollabTimePurchasesForMonths = businessProcessClient.getCollaborationTimeForPlatformForMonths(BUYER,bearerToken);
-        Map<Integer,Double> averageCollabTimeSalesForMonths = businessProcessClient.getCollaborationTimeForPlatformForMonths(SELLER,bearerToken);
-        Map<Integer,Double> averageCollabTimeForMonths = new HashMap<>();
-        averageCollabTimePurchasesForMonths.forEach((month, value) -> averageCollabTimeForMonths.put(month, (averageCollabTimeSalesForMonths.get(month) + value) / 2));
-        CollaborationTime collaborationTime = new CollaborationTime(averageCollabTime, averageCollabTimePurchases, averageCollabTimeSales,averageCollabTimeForMonths,
-                averageCollabTimePurchasesForMonths,averageCollabTimeSalesForMonths);
+            Double averageCollabTime = (averageCollabTimePurchases+averageCollabTimeSales)/2;
+            Map<Integer,Double> averageCollabTimeForMonths = new HashMap<>();
+            averageCollabTimePurchasesForMonths.forEach((month, value) -> averageCollabTimeForMonths.put(month, (averageCollabTimeSalesForMonths.get(month) + value) / 2));
+            CollaborationTime collaborationTime = new CollaborationTime(averageCollabTime, averageCollabTimePurchases, averageCollabTimeSales,averageCollabTimeForMonths,
+                    averageCollabTimePurchasesForMonths,averageCollabTimeSalesForMonths);
 
-        //response time
-        Double averageResponseTime = businessProcessClient.geResponseTimeForPlatform(bearerToken);
-        Map<Integer,Double> averagetimeForMonths =
-                businessProcessClient.geResponseTimeForPlatformForMonths(bearerToken);
-        ResponseTime resTime = new ResponseTime(averageResponseTime,averagetimeForMonths);
+            ResponseTime resTime = new ResponseTime(averageResponseTime,averagetimeForMonths);
 
-        // aggregate statistics
-        CollaborationStats collabStats = new CollaborationStats();
-        collabStats.setCollaborationTime(collaborationTime);
-        collabStats.setResponseTime(resTime);
-        return ResponseEntity.ok(collabStats);
+            // aggregate statistics
+            CollaborationStats collabStats = new CollaborationStats();
+            collabStats.setCollaborationTime(collaborationTime);
+            collabStats.setResponseTime(resTime);
+            return ResponseEntity.ok(collabStats);
+        } finally {
+            // close the thread pool
+            if(executorService != null && !executorService.isShutdown()) {
+                executorService.shutdown();
+            }
+        }
     }
 }
