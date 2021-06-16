@@ -30,12 +30,12 @@ import static eu.nimble.service.dataaggregation.clients.BusinessProcessClient.Ro
 import static eu.nimble.service.dataaggregation.clients.BusinessProcessClient.Status.*;
 import static eu.nimble.service.dataaggregation.clients.BusinessProcessClient.Type.*;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 /**
  * REST Controller for managing data channels.
@@ -214,11 +214,11 @@ public class AggregateController {
         //collab time
         Double averageCollabTimePurchases = businessProcessClient.getCollaborationTimeForCompany(BUYER,Integer.parseInt(companyID),bearerToken);
         Double averageCollabTimeSales = businessProcessClient.getCollaborationTimeForCompany(SELLER,Integer.parseInt(companyID),bearerToken);
-        Double averageCollabTime = (averageCollabTimePurchases+averageCollabTimeSales)/2;
+        Double averageCollabTime = calculateAverage(Arrays.asList(averageCollabTimePurchases,averageCollabTimeSales));
         Map<Integer,Double> averageCollabTimePurchasesForMonths = businessProcessClient.getCollaborationTimeForCompanyForMonths(BUYER,Integer.parseInt(companyID),bearerToken);
         Map<Integer,Double> averageCollabTimeSalesForMonths = businessProcessClient.getCollaborationTimeForCompanyForMonths(SELLER,Integer.parseInt(companyID),bearerToken);
         Map<Integer,Double> averageCollabTimeForMonths = new HashMap<>();
-        averageCollabTimePurchasesForMonths.forEach((month, value) -> averageCollabTimeForMonths.put(month, (averageCollabTimeSalesForMonths.get(month) + value) / 2));
+        averageCollabTimePurchasesForMonths.forEach((month, value) -> averageCollabTimeForMonths.put(month, calculateAverage(Arrays.asList(averageCollabTimeSalesForMonths.get(month), value))));
         CollaborationTime collaborationTime = new CollaborationTime(averageCollabTime, averageCollabTimePurchases, averageCollabTimeSales,averageCollabTimeForMonths,
                 averageCollabTimePurchasesForMonths,averageCollabTimeSalesForMonths);
 
@@ -267,9 +267,9 @@ public class AggregateController {
             Double averageResponseTime = averageResponseTimeFuture.get();
             Map<Integer,Double> averagetimeForMonths = averagetimeForMonthsFuture.get();
 
-            Double averageCollabTime = (averageCollabTimePurchases+averageCollabTimeSales)/2;
+            Double averageCollabTime = calculateAverage(Arrays.asList(averageCollabTimePurchases,averageCollabTimeSales));
             Map<Integer,Double> averageCollabTimeForMonths = new HashMap<>();
-            averageCollabTimePurchasesForMonths.forEach((month, value) -> averageCollabTimeForMonths.put(month, (averageCollabTimeSalesForMonths.get(month) + value) / 2));
+            averageCollabTimePurchasesForMonths.forEach((month, value) -> averageCollabTimeForMonths.put(month, calculateAverage(Arrays.asList(averageCollabTimeSalesForMonths.get(month),value))));
             CollaborationTime collaborationTime = new CollaborationTime(averageCollabTime, averageCollabTimePurchases, averageCollabTimeSales,averageCollabTimeForMonths,
                     averageCollabTimePurchasesForMonths,averageCollabTimeSalesForMonths);
 
@@ -286,5 +286,22 @@ public class AggregateController {
                 executorService.shutdown();
             }
         }
+    }
+
+    /**
+     * Calculates the average of non-zero values.
+     * @param values a list of Doubles
+     * @return the average of given values
+     * */
+    private Double calculateAverage(List<Double> values){
+        // find non zero values
+        List<Double> nonZeroValues = values.stream().filter(value -> value != 0).collect(Collectors.toList());
+        int numberOfNonZeroValues = nonZeroValues.size();
+        // return the average of non-zero values
+        if(numberOfNonZeroValues > 0){
+            Double sum = nonZeroValues.stream().reduce(0.0, Double::sum);
+            return sum/numberOfNonZeroValues;
+        }
+        return 0.0;
     }
 }
