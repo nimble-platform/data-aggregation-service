@@ -30,7 +30,12 @@ import static eu.nimble.service.dataaggregation.clients.BusinessProcessClient.Ro
 import static eu.nimble.service.dataaggregation.clients.BusinessProcessClient.Status.*;
 import static eu.nimble.service.dataaggregation.clients.BusinessProcessClient.Type.*;
 
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 /**
  * REST Controller for managing data channels.
@@ -91,10 +96,10 @@ public class AggregateController {
         Integer totalBusinessProcessesDeniedSeller = businessProcessClient.getProcessCountByStatusAndRole(SELLER,DENIED, bearerToken);
 
         // statistics from Business-Process service
-        Integer totalBusinessProcesses = totalBusinessProcessesSeller + totalBusinessProcessesBuyer;
-        Integer totalBusinessProcessesWaiting = totalBusinessProcessesWaitingSeller + totalBusinessProcessesWaitingBuyer;
-        Integer totalBusinessProcessesApproved= totalBusinessProcessesApprovedSeller + totalBusinessProcessesApprovedBuyer;
-        Integer totalBusinessProcessesDenied = totalBusinessProcessesDeniedSeller + totalBusinessProcessesDeniedBuyer;
+        Integer totalBusinessProcesses = (totalBusinessProcessesSeller + totalBusinessProcessesBuyer)/2;
+        Integer totalBusinessProcessesWaiting = (totalBusinessProcessesWaitingSeller + totalBusinessProcessesWaitingBuyer)/2;
+        Integer totalBusinessProcessesApproved= (totalBusinessProcessesApprovedSeller + totalBusinessProcessesApprovedBuyer)/2;
+        Integer totalBusinessProcessesDenied = (totalBusinessProcessesDeniedSeller + totalBusinessProcessesDeniedBuyer)/2;
 
         // statistics from Business-Process service
         Integer totalBusinessProcessesInformationRequest = businessProcessClient.getProcessCountByType(ITEM_INFORMATION_REQUEST, bearerToken);
@@ -209,8 +214,13 @@ public class AggregateController {
         //collab time
         Double averageCollabTimePurchases = businessProcessClient.getCollaborationTimeForCompany(BUYER,Integer.parseInt(companyID),bearerToken);
         Double averageCollabTimeSales = businessProcessClient.getCollaborationTimeForCompany(SELLER,Integer.parseInt(companyID),bearerToken);
-        Double averageCollabTime = (averageCollabTimePurchases+averageCollabTimeSales)/2;
-        CollaborationTime collaborationTime = new CollaborationTime(averageCollabTime, averageCollabTimePurchases, averageCollabTimeSales);
+        Double averageCollabTime = calculateAverage(Arrays.asList(averageCollabTimePurchases,averageCollabTimeSales));
+        Map<Integer,Double> averageCollabTimePurchasesForMonths = businessProcessClient.getCollaborationTimeForCompanyForMonths(BUYER,Integer.parseInt(companyID),bearerToken);
+        Map<Integer,Double> averageCollabTimeSalesForMonths = businessProcessClient.getCollaborationTimeForCompanyForMonths(SELLER,Integer.parseInt(companyID),bearerToken);
+        Map<Integer,Double> averageCollabTimeForMonths = new HashMap<>();
+        averageCollabTimePurchasesForMonths.forEach((month, value) -> averageCollabTimeForMonths.put(month, calculateAverage(Arrays.asList(averageCollabTimeSalesForMonths.get(month), value))));
+        CollaborationTime collaborationTime = new CollaborationTime(averageCollabTime, averageCollabTimePurchases, averageCollabTimeSales,averageCollabTimeForMonths,
+                averageCollabTimePurchasesForMonths,averageCollabTimeSalesForMonths);
 
         //response time
         Double averageResponseTime = businessProcessClient.geResponseTimeForCompany(Integer.parseInt(companyID),bearerToken);
@@ -234,25 +244,64 @@ public class AggregateController {
             @ApiResponse(code = 200, message = "Aggregated statistics of company collaboration"),
             @ApiResponse(code = 400, message = "Error while aggregating statistics.")})
     @RequestMapping(value = "/platform/collabaration", produces = {"application/json"}, method = RequestMethod.GET)
-    public ResponseEntity<?> getCollabarationStatisticsForPlatform(@ApiParam(value = "The Bearer token provided by the identity service") @RequestHeader(value = "Authorization", required = true) String bearerToken) {
+    public ResponseEntity<?> getCollabarationStatisticsForPlatform(@ApiParam(value = "The Bearer token provided by the identity service") @RequestHeader(value = "Authorization", required = true) String bearerToken) throws ExecutionException, InterruptedException {
+        ExecutorService executorService = null;
+        try{
+            // create a thread pool to run business process service calls asynchronous
+            executorService = Executors.newCachedThreadPool();
+            //collab time
+            Future<Double> averageCollabTimePurchasesFuture = executorService.submit(() -> businessProcessClient.getCollaborationTimeForPlatform(BUYER,bearerToken));
+            Future<Double> averageCollabTimeSalesFuture = executorService.submit(() -> businessProcessClient.getCollaborationTimeForPlatform(SELLER,bearerToken));
+            // collaboration times monthly
+            Future<Map<Integer,Double>> averageCollabTimePurchasesForMonthsFuture = executorService.submit(() -> businessProcessClient.getCollaborationTimeForPlatformForMonths(BUYER,bearerToken));
+            Future<Map<Integer,Double>> averageCollabTimeSalesForMonthsFuture = executorService.submit(() -> businessProcessClient.getCollaborationTimeForPlatformForMonths(SELLER,bearerToken));
+            // response time
+            Future<Double> averageResponseTimeFuture = executorService.submit(() -> businessProcessClient.geResponseTimeForPlatform(bearerToken));
+            Future<Map<Integer,Double>> averagetimeForMonthsFuture = executorService.submit(() -> businessProcessClient.geResponseTimeForPlatformForMonths(bearerToken));
 
+            // get the response of each asynchronous call
+            Double averageCollabTimePurchases = averageCollabTimePurchasesFuture.get();
+            Double averageCollabTimeSales = averageCollabTimeSalesFuture.get();
+            Map<Integer,Double> averageCollabTimePurchasesForMonths = averageCollabTimePurchasesForMonthsFuture.get();
+            Map<Integer,Double> averageCollabTimeSalesForMonths = averageCollabTimeSalesForMonthsFuture.get();
+            Double averageResponseTime = averageResponseTimeFuture.get();
+            Map<Integer,Double> averagetimeForMonths = averagetimeForMonthsFuture.get();
 
-        //collab time
-        Double averageCollabTimePurchases = businessProcessClient.getCollaborationTimeForPlatform(BUYER,bearerToken);
-        Double averageCollabTimeSales = businessProcessClient.getCollaborationTimeForPlatform(SELLER,bearerToken);
-        Double averageCollabTime = (averageCollabTimePurchases+averageCollabTimeSales)/2;
-        CollaborationTime collaborationTime = new CollaborationTime(averageCollabTime, averageCollabTimePurchases, averageCollabTimeSales);
+            Double averageCollabTime = calculateAverage(Arrays.asList(averageCollabTimePurchases,averageCollabTimeSales));
+            Map<Integer,Double> averageCollabTimeForMonths = new HashMap<>();
+            averageCollabTimePurchasesForMonths.forEach((month, value) -> averageCollabTimeForMonths.put(month, calculateAverage(Arrays.asList(averageCollabTimeSalesForMonths.get(month),value))));
+            CollaborationTime collaborationTime = new CollaborationTime(averageCollabTime, averageCollabTimePurchases, averageCollabTimeSales,averageCollabTimeForMonths,
+                    averageCollabTimePurchasesForMonths,averageCollabTimeSalesForMonths);
 
-        //response time
-        Double averageResponseTime = businessProcessClient.geResponseTimeForPlatform(bearerToken);
-        Map<Integer,Double> averagetimeForMonths =
-                businessProcessClient.geResponseTimeForPlatformForMonths(bearerToken);
-        ResponseTime resTime = new ResponseTime(averageResponseTime,averagetimeForMonths);
+            ResponseTime resTime = new ResponseTime(averageResponseTime,averagetimeForMonths);
 
-        // aggregate statistics
-        CollaborationStats collabStats = new CollaborationStats();
-        collabStats.setCollaborationTime(collaborationTime);
-        collabStats.setResponseTime(resTime);
-        return ResponseEntity.ok(collabStats);
+            // aggregate statistics
+            CollaborationStats collabStats = new CollaborationStats();
+            collabStats.setCollaborationTime(collaborationTime);
+            collabStats.setResponseTime(resTime);
+            return ResponseEntity.ok(collabStats);
+        } finally {
+            // close the thread pool
+            if(executorService != null && !executorService.isShutdown()) {
+                executorService.shutdown();
+            }
+        }
+    }
+
+    /**
+     * Calculates the average of non-zero values.
+     * @param values a list of Doubles
+     * @return the average of given values
+     * */
+    private Double calculateAverage(List<Double> values){
+        // find non zero values
+        List<Double> nonZeroValues = values.stream().filter(value -> value != 0).collect(Collectors.toList());
+        int numberOfNonZeroValues = nonZeroValues.size();
+        // return the average of non-zero values
+        if(numberOfNonZeroValues > 0){
+            Double sum = nonZeroValues.stream().reduce(0.0, Double::sum);
+            return sum/numberOfNonZeroValues;
+        }
+        return 0.0;
     }
 }

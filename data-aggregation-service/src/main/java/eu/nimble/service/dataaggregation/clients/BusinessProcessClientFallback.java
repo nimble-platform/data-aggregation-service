@@ -62,6 +62,16 @@ public class BusinessProcessClientFallback implements BusinessProcessClient {
     public Double getCollaborationTimeForPlatform(Role role,String bearerToken){ return -1.0; }
 
     @Override
+    public Map<Integer, Double> getCollaborationTimeForCompanyForMonths(Role role, Integer partyId, String bearerToken) {
+        return null;
+    }
+
+    @Override
+    public Map<Integer, Double> getCollaborationTimeForPlatformForMonths(Role role, String bearerToken) {
+        return null;
+    }
+
+    @Override
     public Double geResponseTimeForPlatform(String bearerToken){ return -1.0; }
 
     @Override

@@ -22,7 +22,7 @@ logstash:
   uri: ${LOGSTASH_URI:localhost:5000}
 
 nimble:
-  corsEnabled: false
+  corsEnabled: ${CORS_ENABLED:false}
   identity:
     url: ${IDENTITY_SERVICE_URL:http://localhost:9096}
   business-process:

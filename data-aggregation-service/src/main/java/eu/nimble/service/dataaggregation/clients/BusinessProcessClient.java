@@ -36,7 +36,7 @@ public interface BusinessProcessClient {
             @RequestParam(value = "partyId") Integer partyId,@RequestHeader("Authorization") String bearerToken);
 
     @RequestMapping(method = RequestMethod.GET, value = "/statistics/total-number/business-process")
-    Integer getProcessCountByType(@RequestParam(value = "BusinessProcessType") Type type,
+    Integer getProcessCountByType(@RequestParam(value = "businessProcessType") Type type,
             @RequestHeader("Authorization") String bearerToken);
 
     @RequestMapping(method = RequestMethod.GET, value = "/statistics/total-number/business-process")
@@ -58,6 +58,15 @@ public interface BusinessProcessClient {
     @RequestMapping(method = RequestMethod.GET, value = "/statistics/collaboration-time")
     Double getCollaborationTimeForPlatform(@RequestParam(value = "role") Role role,
             @RequestHeader("Authorization") String bearerToken);
+
+
+    @RequestMapping(method = RequestMethod.GET, value = "/statistics/collaboration-time-months")
+    Map<Integer,Double> getCollaborationTimeForCompanyForMonths(@RequestParam(value = "role") Role role,
+                                                                @RequestParam(value = "partyId") Integer partyId ,
+                                                          @RequestHeader("Authorization") String bearerToken);
+
+    @RequestMapping(method = RequestMethod.GET, value = "/statistics/collaboration-time-months")
+    Map<Integer,Double> getCollaborationTimeForPlatformForMonths(@RequestParam(value = "role") Role role,@RequestHeader("Authorization") String bearerToken);
 
     @RequestMapping(method = RequestMethod.GET, value = "/statistics/response-time")
     Double geResponseTimeForCompany(@RequestParam(value = "partyId") Integer partyId ,
